@@ -1,0 +1,77 @@
+#!/bin/bash
+
+config="/var/log/timebomb.conf"
+log="/var/log/timebomb.log"
+script="$(pwd)/script"
+
+#check create logrotate configuration file
+if [ ! -e $config ] 
+then 
+ touch $config
+fi
+
+if [ ! -w $config ]
+then
+ chmod +rw $config 
+fi
+
+if [ ! -w $config -o ! -r $config ]
+then 
+ echo "ERROR: cant create readable/writable config file at $config"
+ exit
+fi
+
+#if file exist and writable fill it with data
+printf "$log {\n"\
+"su root syslog\n"\
+"size 10M\n"\
+"nocompress\n"\
+"rotate 1\n"\
+"}\n" > $config
+#
+
+echo "STATUS: $config was created sucessfully"
+
+#add line to crontab if its not exist
+new_line="* * * * * $script"
+IFS=$'\n'
+
+line_exists=false
+for line in $(crontab -l)
+do
+ if [ $line = $new_line ]
+ then
+  line_exists=true
+  echo "STATUS: New line already exists in crontab."
+  break
+ fi
+done
+
+if [ $line_exists = "false" ]
+then
+ (crontab -l; echo "$new_line") | crontab -
+ echo "STATUS: New line added to crontab."
+fi
+#
+
+#start or restart cron service to apply new crontab
+cron_pid=$(pidof cron)
+if [ ${#cron_pid} = 0 ]
+then
+ sudo service cron start &>/dev/null
+ echo "STATUS: Cron service started."
+else
+ sudo service cron restart &>/dev/null
+ echo "STATUS: Cron service restarted."
+fi
+#
+
+echo "STATUS: Init finished sucessfully. Use 'ls -lah /var/log/time*' to check the result."
+
+#debug
+#ls -la $config
+#cat $config
+#service cron status
+#crontab -l | tail -n 3
+#
+

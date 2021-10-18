@@ -1,0 +1,39 @@
+#!/bin/bash
+
+log="/var/log/timebomb.log"
+config="/var/log/timebomb.conf"
+
+#operate with file, create and check if writable
+if [ ! -e $log ]
+then
+ touch $log
+fi
+
+if [ ! -w $log ]
+then
+ echo "ERROR: cant open $log for writing"
+ exit
+fi
+#
+
+#generate random size and append to file
+random_size=$(( $RANDOM % 1024 + 1024 ))
+dd if=/dev/random bs=1K count=$random_size >> $log
+#
+
+#logroate file
+if [ ! -e $config ]
+then
+ $(./script_init)
+fi
+
+sudo logrotate $config
+#
+
+#debug
+ls -la /var/log/time*
+#
+
+
+
+
