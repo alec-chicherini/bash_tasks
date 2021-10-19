@@ -12,7 +12,7 @@ fi
 if [ ! -w $log ]
 then
  echo "ERROR: cant open $log for writing"
- exit
+ exit 1
 fi
 #
 
@@ -24,16 +24,18 @@ dd if=/dev/random bs=1K count=$random_size >> $log
 #logroate file
 if [ ! -e $config ]
 then
- $(./script_init)
+ echo  "ERROR: $config file do not exist. Use script_init file to create it."
+ echo  "Usage: './script_init like cron'   or"
+ echo  "       './script_init like daemon'"
 fi
 
 sudo logrotate $config
 #
 
 #debug
-ls -la /var/log/time*
+#ls -la /var/log/time*
 #
 
-
+exit 0
 
 

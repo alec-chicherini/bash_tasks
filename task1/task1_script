@@ -1,0 +1,12 @@
+#!/bin/bash
+#daemon script
+
+/usr/sbin/script_init like daemon
+
+#launch script every minute
+while /usr/sbin/script
+do
+ sleep 1s
+echo tick
+done
+#

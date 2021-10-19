@@ -1,0 +1,77 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          task1
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: timebomb.log executer
+# Description:       Init script for task1 in Ubuntu 20.04 WSL.
+### END INIT INFO
+
+NAME=task1
+DAEMON=/usr/sbin/"$NAME"
+SCRIPTNAME=/etc/init.d/"$NAME"
+
+test -f $DAEMON	    ||(echo "ERROR: $DAEMON does not exist"; exit 0)
+test -f $SCRIPTNAME ||(echo "ERROR: $SCRIPTNAME does not exist"; exit 0)
+
+function check_status()
+{
+start-stop-daemon --status --name $NAME # && return $? || return $?
+}
+
+case "$1" in
+
+ start)
+  check_status;check_status_=$?
+  if [ $check_status_ -eq 0 ]
+  then
+   echo "Daemon $NAME is already running. Use restart or reload."
+  elif [ $check_status_ -eq 1 -o $check_status_ -eq 3 -o $check_status_ -eq 4 ]
+   then
+   echo "Starting daemon $NAME"
+   start-stop-daemon --start --exec $DAEMON --background
+  fi
+  ;;
+
+ stop)
+  check_status;check_status_=$?
+  if [ $check_status_ -eq 3 ]
+  then
+   echo "Daemon $NAME stoping"
+   start-stop-daemon --stop --name $NAME
+  elif [ $check_status_ -eq 1 -o $check_status_ -eq 3 -o $check_status_ -eq 4 ]
+   then
+   echo "Daemon $NAME already stoppped or unavailible."
+  fi
+  ;;
+
+ status)
+check_status;check_status_=$?
+  if [ $check_status_ -eq 0 ]
+  then
+   echo "Daemon $NAME is running"
+  elif [ $check_status_ -eq 1 ]
+  then
+   echo "Daemon $NAME is not running and pid file exists"
+  elif [ $check_status_ -eq 3 ]
+  then
+   echo "Daemon $NAME is not running"
+  elif [ $check_status_ -eq 3 ]
+  then
+   echo "Unable to determine daemon $NAME status"
+fi
+  ;;
+
+ restart|reload)
+  service $NAME stop
+  service $NAME start
+;;
+ *)
+  echo "Usage: service $NAME {start|stop|status|restart|reload}"
+  ;;
+esac
+
+exit 0
+

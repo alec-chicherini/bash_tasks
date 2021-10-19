@@ -1,0 +1,20 @@
+#!/bin/bash
+
+#copy and add task1 as daemon
+cp task1_script /usr/sbin/task1
+chmod +x /usr/sbin/task1
+
+cp ../task0/script /usr/sbin/script
+chmod +x /usr/sbin/script
+
+cp ../task0/script_init /usr/sbin/script_init
+chmod +x /usr/sbin/script_init
+
+cp task1 /etc/init.d/
+chmod +x /etc/init.d/task1
+
+cd  /etc/init.d
+update-rc.d task1 defaults
+
+service task1 start
+#

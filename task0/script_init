@@ -4,19 +4,38 @@ config="/var/log/timebomb.conf"
 log="/var/log/timebomb.log"
 script="$(pwd)/script"
 
+#check if input param exists
+
+if [ "$1" != "like" ]
+then
+ echo  "ERROR: cant init without param."
+ echo  "Usage: './script_init like cron'   or"
+ echo  "       './script_init like daemon'"
+ exit 1
+elif [ "$2" != "cron" -a "$2" != "daemon" ]
+then
+ echo  "ERROR: wrong like param is $2"
+ echo  "Usage: './script_init like cron'   or"
+ echo  "       './script_init like daemon'"
+ exit 1
+else
+ echo "STATUS: script initialised like $2"
+fi
+#
+
 #check create logrotate configuration file
-if [ ! -e $config ] 
-then 
+if [ ! -e $config ]
+then
  touch $config
 fi
 
 if [ ! -w $config ]
 then
- chmod +rw $config 
+ chmod +rw $config
 fi
 
 if [ ! -w $config -o ! -r $config ]
-then 
+then
  echo "ERROR: cant create readable/writable config file at $config"
  exit
 fi
@@ -32,39 +51,44 @@ printf "$log {\n"\
 
 echo "STATUS: $config was created sucessfully"
 
-#add line to crontab if its not exist
-new_line="* * * * * $script"
-IFS=$'\n'
+#if option equal `like cron` then add line to crontab and restart service
+if [ "$2" = "cron" ]
+then
+ #add line to crontab if its not exist
+ new_line="* * * * * $script"
+ IFS=$'\n'
 
-line_exists=false
-for line in $(crontab -l)
-do
- if [ $line = $new_line ]
+ line_exists=false
+ for line in $(crontab -l)
+ do
+  if [ $line = $new_line ]
+  then
+   line_exists=true
+   echo "STATUS: New line already exists in crontab."
+   break
+  fi
+ done
+
+ if [ $line_exists = "false" ]
  then
-  line_exists=true
-  echo "STATUS: New line already exists in crontab."
-  break
+  (crontab -l; echo "$new_line") | crontab -
+  echo "STATUS: New line added to crontab."
  fi
-done
+ #
 
-if [ $line_exists = "false" ]
-then
- (crontab -l; echo "$new_line") | crontab -
- echo "STATUS: New line added to crontab."
-fi
-#
+ #start or restart cron service to apply new crontab
+ cron_pid=$(pidof cron)
+ if [ ${#cron_pid} = 0 ]
+ then
+  sudo service cron start &>/dev/null
+  echo "STATUS: Cron service started."
+ else
+  sudo service cron restart &>/dev/null
+  echo "STATUS: Cron service restarted."
+ fi
+ #
 
-#start or restart cron service to apply new crontab
-cron_pid=$(pidof cron)
-if [ ${#cron_pid} = 0 ]
-then
- sudo service cron start &>/dev/null
- echo "STATUS: Cron service started."
-else
- sudo service cron restart &>/dev/null
- echo "STATUS: Cron service restarted."
-fi
-#
+fi #end of 'like cron' option
 
 echo "STATUS: Init finished sucessfully. Use 'ls -lah /var/log/time*' to check the result."
 

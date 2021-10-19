@@ -1,0 +1,5 @@
+Информация о процессах:
+pstree -ac
+ps al
+top, atop, htop
+
