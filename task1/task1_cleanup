@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#cleanup if init.d was used
+
+service task1 stop
+
+rm /usr/sbin/task1
+rm /usr/sbin/script
+rm /usr/sbin/script_init
+rm /etc/init.d/task1
+
+update-rc.d task1 remove
+#
+
+
+

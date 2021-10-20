@@ -1,20 +1,45 @@
 #!/bin/bash
 
-#copy and add task1 as daemon
-cp task1_script /usr/sbin/task1
-chmod +x /usr/sbin/task1
+ if [ "$1" != "using" ]
+ then
+  echo  "ERROR: cant init without param."
+  echo  "Usage: './task1_init using initd'   or"
+  echo  "       './task1_init using systemd'"
+  exit 1
+ elif [ "$2" != "initd" -a "$2" != "systemd" ]
+ then
+  echo  "ERROR: wrong like param is $2"
+  echo  "Usage: './task1_init using initd'   or"
+  echo  "       './task1_init using systemd'"
+  exit 1
+ else
+  echo "STATUS: script initialised using $2"
+ fi
+ #
 
-cp ../task0/script /usr/sbin/script
-chmod +x /usr/sbin/script
 
-cp ../task0/script_init /usr/sbin/script_init
-chmod +x /usr/sbin/script_init
+if [ "$2" = "initd" ]
+then
+ #copy files and add permissions to run daemon using init.d
+ cp task1_script /usr/sbin/task1
+ chmod +x /usr/sbin/task1
 
-cp task1 /etc/init.d/
-chmod +x /etc/init.d/task1
+ cp ../task0/script /usr/sbin/script
+ chmod +x /usr/sbin/script
 
-cd  /etc/init.d
-update-rc.d task1 defaults
+ cp ../task0/script_init /usr/sbin/script_init
+ chmod +x /usr/sbin/script_init
 
-service task1 start
-#
+ cp task1 /etc/init.d/
+ chmod +x /etc/init.d/task1
+
+ cd  /etc/init.d
+ update-rc.d task1 defaults
+
+ service task1 start
+ echo "STATUS: service task1 started. Usage:'service task1 {start|stop|status|restart}'"
+ #
+elif [ "$2" = "systemd" ]
+then
+ echo "STATUS: service task1 started"
+fi

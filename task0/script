@@ -29,7 +29,7 @@ then
  echo  "       './script_init like daemon'"
 fi
 
-sudo logrotate $config
+logrotate $config
 #
 
 #debug
