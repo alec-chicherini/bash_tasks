@@ -1,0 +1,12 @@
+#!/bin/bash
+#clean up crontab and logs
+
+#remove logs
+rm -f /var/log/timebomb*
+
+#remove new line wich was added to crontab
+script="$(pwd)/script"
+new_line="* * * * * $script"
+(crontab -l | grep -v "$new_line") | crontab -
+
+service cron restart

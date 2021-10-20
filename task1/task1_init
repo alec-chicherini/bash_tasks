@@ -41,5 +41,19 @@ then
  #
 elif [ "$2" = "systemd" ]
 then
- echo "STATUS: service task1 started"
+ cp task1_script /usr/sbin/task1
+ chmod +x /usr/sbin/task1
+
+ cp ../task0/script /usr/sbin/script
+ chmod +x /usr/sbin/script
+
+ cp ../task0/script_init /usr/sbin/script_init
+ chmod +x /usr/sbin/script_init
+
+ chmod +x task1.service
+ ln -s $(pwd)/task1.service /etc/systemd/system/task1.service
+ systemctl daemon-reload
+ systemctl enable task1.service
+ systemctl start task1.service
+ echo "STATUS: service task1 started. Usage: 'systemctl {start|stop|status|restart} task1.service'"
 fi

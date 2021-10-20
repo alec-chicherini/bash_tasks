@@ -1,15 +1,25 @@
 #!/bin/bash
 
-#cleanup if init.d was used
+#cleanup if init.d was used or systemd
 
 service task1 stop
 
-rm /usr/sbin/task1
-rm /usr/sbin/script
-rm /usr/sbin/script_init
-rm /etc/init.d/task1
+systemctl stop task1.service
+systemctl disable task1.service
 
+rm -f /usr/sbin/task1
+rm -f /usr/sbin/script
+rm -f /usr/sbin/script_init
+
+rm -f /etc/init.d/task1
 update-rc.d task1 remove
+
+rm -f /etc/systemd/system/task1.service
+systemctl daemon-reload
+systemctl reset-failed
+
+rm /var/log/timebomb*
+
 #
 
 

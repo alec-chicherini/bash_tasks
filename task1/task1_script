@@ -3,9 +3,9 @@
 
 /usr/sbin/script_init like daemon
 
-#launch script every minute
+#launch script every second
 while /usr/sbin/script
 do
- sleep 1m
+ sleep 1s
 done
 #

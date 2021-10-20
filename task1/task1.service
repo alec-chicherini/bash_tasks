@@ -1,0 +1,10 @@
+[Unit]
+Description=task1 service
+
+[Service]
+ExecStart=/usr/sbin/task1
+ExecStop=/bin/kill $MAINPID
+ExecReload=/bin/kill -s HUP $MAINPID 
+
+[Install]
+WantedBy=multi-user.target
