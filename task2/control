@@ -1,0 +1,14 @@
+Package: timebomb
+Version: 0.0.1-1
+Provides: timebomb
+Maintainer: Chicherin Alexey <chicherin.alexey@gmail.com>
+Architecture: all
+Section: science
+Priority: optional
+Depends: systemd, logrotate, bash(>= 5.0)
+Description: timebomb log task2 script.
+ timebomb script add systemd unit like a service which add
+ random value of data to /var/log/timebomb.log file
+ every second and logrotate it every 10Mb of file.
+
+

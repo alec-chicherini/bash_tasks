@@ -1,0 +1,46 @@
+#!/bin/bash
+#script to create deb package.
+
+#make folders and copy files to deb folder
+
+mkdir -p timebomb/DEBIAN
+mkdir -p timebomb/usr/sbin
+mkdir -p timebomb/etc/systemd/system
+mkdir -p timebomb/var/log
+
+cp ../task1/task1_script timebomb/usr/sbin/task1
+chmod +x timebomb/usr/sbin/task1
+
+cp ../task0/script timebomb/usr/sbin/script
+chmod +x timebomb/usr/sbin/script
+
+cp ../task0/script_init timebomb/usr/sbin/script_init
+chmod +x timebomb/usr/sbin/script_init
+
+cp ../task1/task1.service timebomb/etc/systemd/system/task1.service
+chmod +x timebomb/etc/systemd/system/task1.service
+
+cp control timebomb/DEBIAN/control
+cp copyright timebomb/DEBIAN/copyright
+cp dirs timebomb/DEBIAN/dirs
+cp conffiles timebomb/DEBIAN/conffiles
+cp postinst timebomb/DEBIAN/postinst
+cp postrm timebomb/DEBIAN/postrm
+cp prerm timebomb/DEBIAN/prerm
+touch timebomb/DEBIAN/changelog
+chmod 0775 timebomb/DEBIAN/*
+chmod 0644 timebomb/DEBIAN/conffiles
+
+touch timebomb/var/log/timebomb.conf
+chmod +rwx timebomb/var/log/timebomb.conf
+#
+
+#create package
+dpkg-deb --root-owner-group --build timebomb 1>/dev/null
+mv timebomb.deb timebomb_0.1-1_all.deb
+echo "dpkg-deb: building package 'timebomb' in 'timebomb_0.1-1_all.deb'."
+#
+
+#cleanup
+rm timebomb -f -r
+#

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#cleanup systemd unit daemon and logs
+systemctl daemon-reload
+systemctl reset-failed
+
+rm /var/log/timebomb*
+#

@@ -1,0 +1,9 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: github.com/ikvasir
+Upstream-Contact: Chicherin Alexey <chicherin.alexey@gmail.com>
+Source: https://github.com/ikvasir/bash_tasks
+Files: *
+Copyright: 2021 Chicherin Alexey
+License: MIT
+
+

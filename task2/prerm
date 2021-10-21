@@ -1,0 +1,7 @@
+#!/bin/bash
+
+#stop service before removing package
+systemctl stop task1.service
+systemctl disable task1.service
+#
+

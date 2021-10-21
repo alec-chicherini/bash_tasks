@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#duplicate from ../task1/task1_init
+chmod +x /usr/sbin/task1
+chmod +x /usr/sbin/script
+chmod +x /usr/sbin/script_init
+chmod +x /etc/systemd/system/task1.service
+
+systemctl daemon-reload
+systemctl enable task1.service
+systemctl start task1.service
+#
