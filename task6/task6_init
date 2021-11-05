@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#compile binary file for app
+#create process which used 1Gb * sizeof(int) of memory
+
+#sleep $1 seconds and echo .
+function sleep_for(){
+ local i=$1
+ while [ $((i--)) != 0 ]
+ do
+  echo -n " . "
+  sleep 1
+ done
+ echo " "
+return 0
+}
+#
+
+echo  -e "#include <chrono>\n"\
+	"#include <thread>\n"\
+	"int main(){"\
+	"using namespace std::chrono_literals;"\
+	"for(int i=0;i<1024*1024;i++){new int[1024];};"\
+	"while(true){std::this_thread::sleep_for(10s);};"\
+	"return 1;}" > main.cpp
+
+echo "STATUS: compiling main.cpp and trying to run."
+g++ -std=c++14 ./main.cpp -o task6.exe
+sleep_for 2
+[ -x ./task6.exe ] && ( trap 'exit 0' TERM; ./task6.exe & )
+
+PID=$(pidof task6.exe)
+[[ -n $PID ]] && echo "STATUS: task6.exe launched in background with PID=$PID" || echo "ERROR: cant execute ./task6.exe"

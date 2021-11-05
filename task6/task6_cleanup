@@ -1,0 +1,12 @@
+#!/bin/bash
+#cleanup the task output
+
+PID=$(pidof task6.exe)
+
+[[ -n $PID ]] && status=$(ps -p $PID > /dev/null; echo $?)
+[[ $status == 0 ]] && kill $PID
+
+rm -f main.cpp
+rm -f task6.exe
+
+echo "STATUS: cleaned up"

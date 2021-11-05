@@ -1,0 +1,69 @@
+#!/bin/bash
+
+#take the list of most havy processes stored in more than 10% of availible memory and suggest to  terminate it.
+
+#rough calculating percentage $2/$1 * 100%. $2 and $1 must be int.
+function percent_int_int(){
+
+local res=$(echo "x=($2/$1)*100;if(x<1) print 0; x" |bc -l)
+local res_int=${res%.*}
+echo $res_int
+
+return 0;
+}
+#
+
+#yes - no question deialog.
+function dialog_yes_no(){
+while true;
+   do
+    read  -p "$1" yn
+    case $yn in
+     [Yy][Ee][Ss]|Y|y|Д|д|[Дд][Аа] ) return 0;;
+     [Nn][oO]|N|n|Н|н|[Нн][Ее][Тт] ) return 1;;
+     * ) echo " What does it mean $yn? Yes or No?"
+    esac
+   done
+}
+#
+
+#sleep $1 seconds and echo .
+function sleep_for(){
+ local i=$1
+ while [ $((i--)) != 0 ]
+ do
+  echo -n " . "
+  sleep 1
+ done
+ echo " "
+return 0
+}
+#
+
+LIMIT=10
+MEM_TOTAL=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
+MEM_USAGE=$(ps -e ck-drs -o cmd, -o size, -o pid | tail -n +2)
+
+IFS=$'\n'
+for line in $MEM_USAGE
+do
+ COM=$(echo $line | awk '{print $1}')
+ MEM=$(echo $line | awk '{print $2}')
+ PID=$(echo $line | awk '{print $3}')
+ percent=$(percent_int_int $MEM_TOTAL $MEM)
+
+ if [[ $percent>$LIMIT ]]
+ then
+  if dialog_yes_no "STATUS:Process $COM with pid=$PID use $percent% of memory. Do you want to terminate them?(y/n) "
+  then
+   kill $PID
+   echo "STATUS: SIGTERM was sended to pid=$PID"
+   sleep_for 2
+   status=$(ps -p $PID > /dev/null; echo $?)
+   [[ $status == 0 ]] && echo "ERROR: Process still exist after try to execute 'kill $PID'. May be something wrong with owner of process or rights of this script"
+   [[ $status == 1 ]] && echo "STATUS: Process $COM with pid=$PID recieved SIGTERM and was terminated"
+  else
+   echo "STATUS: Process $COM with pid=$PID works continue"
+  fi
+ fi
+done
