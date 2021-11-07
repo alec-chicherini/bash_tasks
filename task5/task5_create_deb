@@ -1,0 +1,135 @@
+#!/bin/bash
+
+#check if  $1 exists and it point to folder with  single *.pro file.
+[ -z $1 ] && { echo "ERROR: \$1 cant be empty."; exit 1; }
+PACKAGE_NAME=$(find $1/*.pro)
+[[ $? == 1 ]] && { echo "ERROR: .pro file not found in $1."; exit 1; }
+[ $(find $1/*.pro | wc -l) -ne 1 ] && { echo "ERROR: too much .pro files in folder. It must be single one"; exit; }
+
+echo -n "STATUS: '$PACKAGE_NAME' file found."
+PACKAGE_NAME=${PACKAGE_NAME##*/}
+PACKAGE_NAME=${PACKAGE_NAME%%.*pro}
+echo " Starting to generate $PACKAGE_NAME.deb package"
+
+#
+
+#
+MAINTAINER_NAME="Alexey Chicherin"
+MAINTAINER_MAIL="chicheirn.alexey@gmail.com"
+PACKAGE_DESCRIPTION="Place short description of package here"
+PACKAGE_VERSION="0.1-1"
+#
+
+#
+mkdir -p $PACKAGE_NAME/DEBIAN
+chmod 775 $PACKAGE_NAME/DEBIAN
+mkdir -p $PACKAGE_NAME/opt
+mkdir -p $PACKAGE_NAME/usr/src/$PACKAGE_NAME
+#
+
+#copy source files of qt project
+cp -r $1/* $PACKAGE_NAME/usr/src/$PACKAGE_NAME
+#
+
+#add files to debian folder
+cd $PACKAGE_NAME/DEBIAN
+
+#format file
+#mkdir source
+#echo "3.0 (quilt)" > source/format
+#
+
+# control file
+cat>control<<EOF
+Source: $PACKAGE_NAME
+Provides: $PACKAGE_NAME
+Package: $PACKAGE_NAME
+Section: science
+Priority: optional
+Maintainer: $MAINTAINER_NAME <$MAINTAINER_MAIL>
+Version: $PACKAGE_VERSION
+Architecture: all
+Depends: bash, qt5-qmake, qt5-default
+Description: $PACKAGE_DESCRIPTION
+EOF
+#
+
+#copyright
+cat>copyright<<EOF
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: $PACKAGE_NAME
+Upstream-Contact: $MAINTAINER_NAME <$MAINTAINER_MAIL>
+Source: https://github.com/ikvasir/bash_tasks
+Files: *
+Copyright: $(date +%Y) $MAINTAINER_NAME
+License: MIT
+EOF
+#
+
+#
+cat>changelog<<EOF
+$PACKAGE_NAME ($PACKAGE_VERSION) experimental; urgency=medium
+
+ * Initial release.
+
+-- $MAINTAINER_NAME <$MAINTAINER_MAIL> $(date -R)
+
+EOF
+#
+
+cat>$PACKAGE_NAME.1<<EOF
+.TH $PACKAGE_NAME 1 $(date +%F) "$MAINTAINER_NAME <$MAINTAINER_MAIL>"
+.SH NAME
+$PACKAGE_NAME \- $PACKAGE_DESCRIPTION
+.SH VERSION
+$PACKAGE_VERSION
+.SH SYNOPSIS
+.B $PACKAGE_NAME
+.RI [ NO_OPTIONS ] ...
+.br
+.SH DESCRIPTION
+This app was compiled with task5_create_deb script from source.
+.SH SEE ALSO
+.BR qmake (1),
+.BR man (1).
+.br
+EOF
+
+cat>postinst<<EOF
+#!/bin/bash
+#build app from source
+cd /usr/src/$PACKAGE_NAME
+qmake
+make
+#
+
+#cleanup
+mv $PACKAGE_NAME /opt
+rm Makefile
+rm .qmake.stash
+rm moc_*
+rm *.o
+#
+EOF
+chmod 0775 postinst
+
+cat>postrm<<EOF
+#!/bin/bash
+rm -f /opt/$PACKAGE_NAME
+EOF
+chmod 0775 postrm
+
+#
+#create package
+cd ../..
+dpkg-deb --build  $PACKAGE_NAME
+[ -x $PACKAGE_NAME.deb ] && { echo "ERROR: dpkg-deb error package creation"; exit 1; }
+PACKAGE_NAME_FULL="$PACKAGE_NAME""_""$PACKAGE_VERSION""_all.deb"
+mv $PACKAGE_NAME.deb $PACKAGE_NAME_FULL
+#
+
+echo "STATUS: deb package './$PACKAGE_NAME_FULL' was sucsessfully created "
+
+#cleanup
+rm $PACKAGE_NAME -f -r
+#
